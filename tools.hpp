@@ -13,6 +13,7 @@ struct node {
     map<string, bool> children; // name: sign, 符号true为正, false为负
     node(string name) {
         this->name = name;
+        this->gateType = 'X';
     }
 };
 

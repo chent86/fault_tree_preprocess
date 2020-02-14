@@ -11,6 +11,7 @@ private:
     bool r3;  // 合并相同子树
 public:
     simplify(string name, bool r1=true, bool r2=true, bool r3=true);
+    ~simplify();
     void run();
     void simplify_helper(node* curNode, node* parentNode, set<string>& visitedSet);
 };

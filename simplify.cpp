@@ -3,6 +3,10 @@
 const string INPUT_DIR = "data/input/";
 const string OUTPUT_DIR = "data/output/";
 
+simplify::~simplify() {
+    delete m_tree;
+}
+
 simplify::simplify(string name, bool r1, bool r2, bool r3)
 :r1(r1), r2(r2), r3(r3) {
     m_tree = new tree();
@@ -49,7 +53,9 @@ void simplify::simplify_helper(node* curNode, node* parentNode, set<string>& vis
         }
         // 合并相邻相同门
         // TODO 合并上来的可能存在冲突
-        if(this->r1 && curNode->gateType == child->gateType) {
+        if(this->r1 && curNode->gateType == child->gateType
+           && curNode->children[child->name]) {
+            // 孩子为负不合并
             for(auto& i: child->children) {
                 if(curNode->children.find(i.first) == curNode->children.end()) {
                     curNode->children[i.first] = i.second;
@@ -101,19 +107,20 @@ void simplify::simplify_helper(node* curNode, node* parentNode, set<string>& vis
 }
 
 int main() {
-    set<string> avoid = {".", "..", "das9701.dag", "edf9206.dag", "elf9601.dag", "nus9601.dag"};
+    set<string> avoid = {".", "..", "das9701.dag", "elf9601.dag", "nus9601.dag"};
     DIR *d = opendir("data/input");
     dirent* entry;
     while((entry=readdir(d)) != NULL) {
         string name = entry->d_name;
-        // name = "das9601.dag";
+        // name = "elf9601.dag";
         if(!avoid.count(name)) {
             string cmd = "mkdir -p " + OUTPUT_DIR + name.substr(0, name.length()-4);
             system(cmd.c_str());
-            simplify* s = new simplify(name, 1, 0, 0);
+            simplify* s = new simplify(name, 1, 1, 1);
             // delete s;
             cout << name << endl;
         }
+        // break;
     }
     closedir(d);
 }

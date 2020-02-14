@@ -63,7 +63,6 @@ void tree::parse(string fileName) {
         int length = line.length();
         string name = "";
         bool atleast = false;
-        char gateType = ' ';
         
 
         // 获取父结点名称
@@ -75,6 +74,7 @@ void tree::parse(string fileName) {
             index++;
         }
         node* new_node = this->create_node(name);
+        new_node->gateType = '&';
 
         // 跳过无意义段(内注释)
         while(line[index] != '=') {
