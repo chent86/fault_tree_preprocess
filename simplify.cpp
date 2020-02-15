@@ -7,8 +7,8 @@ simplify::~simplify() {
     delete m_tree;
 }
 
-simplify::simplify(string name, bool r1, bool r2, bool r3)
-:r1(r1), r2(r2), r3(r3) {
+simplify::simplify(string name, bool isSameGate, bool isOneChild, bool isSameTree)
+:isSameGate(isSameGate), isOneChild(isOneChild), isSameTree(isSameTree) {
     m_tree = new tree();
     m_tree->parse(INPUT_DIR + name);
     this->run();
@@ -22,14 +22,16 @@ simplify::simplify(string name, bool r1, bool r2, bool r3)
 }
 
 void simplify::run() {
-    if(this->r1 || this->r2 || this->r3) {
+    if(this->isSameGate || this->isOneChild || this->isSameTree) {
         node* root = m_tree->create_node("r1");
         set<string> visitedSet;
         this->simplify_helper(root, nullptr, visitedSet);
         if(root->children.size() == 1) {
             node* child = m_tree->create_node(root->children.begin()->first);
-            root->children = child->children;
-            root->gateType = child->gateType;
+            if(child->children.size() != 0) {
+                root->children = child->children;
+                root->gateType = child->gateType;
+            }
         }
     }
 }
@@ -44,33 +46,49 @@ void simplify::simplify_helper(node* curNode, node* parentNode, set<string>& vis
     while(index < childList.size()) {
         node* child = m_tree->create_node(childList[index]);
         // 合并单输入门
-        if(this->r2 && child->children.size() == 1 && child->children.begin()->second) {
-            curNode->children[child->children.begin()->first] = true;
-            curNode->children.erase(child->name);
-            childList.push_back(child->children.begin()->first);
-            index++;
-            continue;
+        if(this->isOneChild && child->children.size() == 1 && child->children.begin()->second) {
+            // 单个非的孩子不化简
+            bool conflict = false;
+            if(curNode->children.find(child->children.begin()->first) != curNode->children.end()
+                && curNode->children[child->children.begin()->first] != !curNode->children[child->name]^child->children.begin()->second)
+                conflict = true;
+            // 有冲突不合并
+            if(!conflict) {
+                if(curNode->children.find(child->children.begin()->first) == curNode->children.end())
+                    childList.push_back(child->children.begin()->first);
+                curNode->children[child->children.begin()->first] = curNode->children[child->name];
+                curNode->children.erase(child->name);
+                index++;
+                continue;
+            }
         }
         // 合并相邻相同门
-        // TODO 合并上来的可能存在冲突
-        if(this->r1 && curNode->gateType == child->gateType
-           && curNode->children[child->name]) {
-            // 孩子为负不合并
+        if(this->isSameGate && curNode->gateType == child->gateType
+           && curNode->children[child->name]) { // 孩子为负不合并
+            // 有冲突不合并
+            bool conflict = false;
             for(auto& i: child->children) {
-                if(curNode->children.find(i.first) == curNode->children.end()) {
-                    curNode->children[i.first] = i.second;
-                    childList.push_back(i.first); // 合并上来后还会重新处理
-                } else if(curNode->children[i.first] != i.second) {
-                    cout << "ERROR" << endl; // TEST
+                if(curNode->children.find(i.first) != curNode->children.end()
+                   && curNode->children[i.first] != i.second) {
+                       conflict = true;
+                       break;
                 }
             }
-            curNode->children.erase(child->name);
-            index++;
-            continue;
+            if(!conflict) {
+                for(auto& i: child->children) {
+                    if(curNode->children.find(i.first) == curNode->children.end()) {
+                        curNode->children[i.first] = i.second;
+                        childList.push_back(i.first); // 合并上来后还会重新处理
+                    }
+                }
+                curNode->children.erase(child->name);
+                index++;
+                continue;
+            }
         }
         simplify_helper(child, curNode, visitedSet);
         // 合并相同子树
-        if(this->r3 && child->children.size() != 0) {
+        if(this->isSameTree && child->children.size() != 0) {
             bool flag = true;
             for(auto& name: visitedSet) {
                 if(name == child->name) {
@@ -90,9 +108,14 @@ void simplify::simplify_helper(node* curNode, node* parentNode, set<string>& vis
                         }
                     }
                     if(same) {
-                        // TODO 替换上来的visitedNode可能也有con
-                        curNode->children[visitedNode->name] = curNode->children[child->name];
-                        curNode->children.erase(child->name);
+                        bool conflict = false;
+                        if(curNode->children.find(visitedNode->name) != curNode->children.end()
+                           && curNode->children[visitedNode->name] != curNode->children[child->name])
+                            conflict = true;
+                        if(!conflict) {
+                            curNode->children[visitedNode->name] = curNode->children[child->name];
+                            curNode->children.erase(child->name);
+                        }
                         flag = false;
                         break;
                     }
@@ -107,17 +130,17 @@ void simplify::simplify_helper(node* curNode, node* parentNode, set<string>& vis
 }
 
 int main() {
-    set<string> avoid = {".", "..", "das9701.dag", "elf9601.dag", "nus9601.dag"};
+    set<string> avoid = {".", "..", "edf9206.dag", "das9701.dag", "elf9601.dag", "nus9601.dag"};
     DIR *d = opendir("data/input");
     dirent* entry;
     while((entry=readdir(d)) != NULL) {
         string name = entry->d_name;
-        // name = "elf9601.dag";
+        // name = "test.dag";
         if(!avoid.count(name)) {
             string cmd = "mkdir -p " + OUTPUT_DIR + name.substr(0, name.length()-4);
             system(cmd.c_str());
             simplify* s = new simplify(name, 1, 1, 1);
-            // delete s;
+            delete s;
             cout << name << endl;
         }
         // break;
