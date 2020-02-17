@@ -42,6 +42,7 @@ public:
     ~findModules();
     node* getNode(const string& name);
     void init_level(node* cur);
+    int getAEG(const char& gateType, const bool& sign);
     void init_connection_list(node* cur);
     void run();
     string get_top_level_node(set<pair<node*, int>>& s);

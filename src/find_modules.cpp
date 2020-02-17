@@ -34,19 +34,23 @@ void findModules::init_level(node* cur) {
     this->levelCount++;
 }
 
+int findModules::getAEG(const char& gateType, const bool& sign) {
+    if(gateType == '|' && sign) {  // 1, 3 对应论文AEG = 1
+        return 1;
+    } else if(gateType == '&' && !sign) {
+        return 3;
+    } else if(gateType == '|' && !sign) {  // 2, 4 对应论文AEG = -1
+        return 2;
+    } else if(gateType == '&' && sign) {
+        return 4;
+    }
+}
+
 void findModules::init_connection_list(node* cur) {
     int AEG = 0;
     for(auto& i: cur->children) {
-        if(cur->gateType == '|' && i.second) {  // 1, 3 对应论文AEG = 1
-            AEG = 1;
-        } else if(cur->gateType == '&' && !i.second) {
-            AEG = 3;
-        } else if(cur->gateType == '|' && !i.second) {  // 2, 4 对应论文AEG = -1
-            AEG = 2;
-        } else if(cur->gateType == '&' && i.second) {
-            AEG = 4;
-        }
-        if(this->connection_list.find(i.first) != this->connection_list.end()) {
+        AEG = getAEG(cur->gateType, i.second);
+        if(this->connection_list.count(i.first)) {
             for(auto& j: this->connection_list[i.first]) {  // 判断connection_list中是否有两种AEG
                 if(j.second % 2 != AEG % 2) {  // 属于论文中描述的同一类
                     this->bothAEG.insert(i.first);
@@ -112,7 +116,7 @@ void findModules::CC_helper(node* cur, set<string>& expandSet, set<string>& conn
         for(auto& j: this->connection_list[i.first])
             connectionSet.insert(j.first->name);
         if(getNode(i.first)->children.size() == 0 || this->result.count(i.first)) {
-            if(this->bothAEG.count(i.first) == 0) {  // 排除有两种AEG的节点
+            if(!this->bothAEG.count(i.first)) {  // 排除有两种AEG的节点
                 basicOrTop.insert(i.first);
             }
         } else {
@@ -126,8 +130,6 @@ void findModules::CC_check(node* cur) {
     set<string> connectionSet;  // 所有节点的connection_list包含的节点
     set<string> basicOrTop; // expand中的basic和module top, 用于LCC阶段 name
     expandSet.insert(cur->name);
-    if(cur->name == "g23")
-        cout << "hello" << endl;
     CC_helper(cur, expandSet, connectionSet, basicOrTop);
     bool flag = true;
     for(const auto&i: connectionSet) {
@@ -137,13 +139,12 @@ void findModules::CC_check(node* cur) {
         }
     }
     if(flag) {
-        cout << cur->name << endl;
         LCC_check(cur, basicOrTop);
     }
 }
 
 void findModules::LCC_check(node* cur, set<string>& basicOrTop) {
-    if(this->moduleDict.find(cur->name) == this->moduleDict.end()) {
+    if(!this->moduleDict.count(cur->name)) {
         this->moduleDict[cur->name] = "m" + to_string(this->lccCount);
         this->lccCount++;
     }
@@ -186,6 +187,7 @@ void findModules::LCC_check(node* cur, set<string>& basicOrTop) {
             node* moduleNode;
             int moduleAEG = 0;
             for(auto& i: this->connection_list[v[0]]) {
+                // 有一个parent正好包含了connection_list相同的结点， 则这个结点就是新module
                 if(i.first->children.size() == v.size()) {
                     nodeExist = true;
                     moduleNode = i.first;
@@ -199,6 +201,7 @@ void findModules::LCC_check(node* cur, set<string>& basicOrTop) {
                 newNode->gateType = firstGateNode->gateType;
                 for(auto& name: v)
                     newNode->children[name] = firstGateNode->children[name];
+                this->connection_list[newNode->name] = {};
                 for(auto& i: this->connection_list[v[0]]) {
                     for(auto& name: v)
                         i.first->children.erase(name);
@@ -207,6 +210,14 @@ void findModules::LCC_check(node* cur, set<string>& basicOrTop) {
                     } else {
                         i.first->children[newNode->name] = false;
                     }
+                    int AEG = getAEG(i.first->gateType, i.first->children[newNode->name]);
+                    for(auto& j: this->connection_list[newNode->name]) {
+                        if(j.second % 2 != AEG % 2) {  // 属于论文中描述的同一类
+                            this->bothAEG.insert(newNode->name);
+                            break;
+                        }
+                    }
+                    this->connection_list[newNode->name].insert({i.first, AEG});
                 }
                 this->result.insert(newNode->name);
             } else {
@@ -232,7 +243,7 @@ void findModules::LCC_check(node* cur, set<string>& basicOrTop) {
                             }
                 }
                 this->result.insert(moduleNode->name);
-                if(this->moduleDict.find(moduleNode->name) == this->moduleDict.end()) {
+                if(!this->moduleDict.count(moduleNode->name)) {
                     this->moduleDict[moduleNode->name] = "m" + to_string(this->lccCount);
                     this->lccCount++;
                 }
