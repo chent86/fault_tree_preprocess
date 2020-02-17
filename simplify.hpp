@@ -10,7 +10,8 @@ private:
     bool isOneChild;  // 合并单输入门
     bool isSameTree;  // 合并相同子树
 public:
-    simplify(string name, bool isSameGate=true, bool isOneChild=true, bool isSameTree=true);
+    simplify(string name, tree* t, string outputDir,
+             bool isSameGate=true, bool isOneChild=true, bool isSameTree=true);
     ~simplify();
     void run();
     void simplify_helper(node* curNode, node* parentNode, set<string>& visitedSet);

@@ -1,18 +1,12 @@
 #include "simplify.hpp"
 
-const string INPUT_DIR = "data/input/";
-const string OUTPUT_DIR = "data/output/";
+simplify::~simplify() {}
 
-simplify::~simplify() {
-    delete m_tree;
-}
-
-simplify::simplify(string name, bool isSameGate, bool isOneChild, bool isSameTree)
-:isSameGate(isSameGate), isOneChild(isOneChild), isSameTree(isSameTree) {
-    m_tree = new tree();
-    m_tree->parse(INPUT_DIR + name);
+simplify::simplify(string name, tree* t, string outputDir, 
+                   bool isSameGate, bool isOneChild, bool isSameTree)
+:m_tree(t), isSameGate(isSameGate), isOneChild(isOneChild), isSameTree(isSameTree) {
     this->run();
-    std::ofstream file(OUTPUT_DIR + name.substr(0, name.length()-4) + "/" + name.substr(0, name.length()-4) + ".sdag");
+    std::ofstream file(outputDir + "/" + name.substr(0, name.length()-4) + "/" + name.substr(0, name.length()-4) + ".sdag");
     string output = "";
     m_tree->dfs_format("r1", output);
     // output = m_tree->quick_format();
@@ -127,23 +121,4 @@ void simplify::simplify_helper(node* curNode, node* parentNode, set<string>& vis
         }
         index++;
     }
-}
-
-int main() {
-    set<string> avoid = {".", "..", "edf9206.dag", "das9701.dag", "elf9601.dag", "nus9601.dag"};
-    DIR *d = opendir("data/input");
-    dirent* entry;
-    while((entry=readdir(d)) != NULL) {
-        string name = entry->d_name;
-        // name = "test.dag";
-        if(!avoid.count(name)) {
-            string cmd = "mkdir -p " + OUTPUT_DIR + name.substr(0, name.length()-4);
-            system(cmd.c_str());
-            simplify* s = new simplify(name, 1, 1, 1);
-            delete s;
-            cout << name << endl;
-        }
-        // break;
-    }
-    closedir(d);
 }

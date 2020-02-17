@@ -210,6 +210,7 @@ void tree::parse(string fileName) {
         }
     }
     file.close();
+    get_gate_and_basic_num();
 }
 
 // 用lastPos记录，按照单个方向每次抽取一个，避免得到相同的组合
@@ -276,5 +277,14 @@ void tree::dfs_format(string name, string& output) {
     }
     for(auto& i: cur->children) {
         dfs_format(i.first, output);
+    }
+}
+
+void tree::get_gate_and_basic_num() {
+    for(auto& i: this->nodeDict) {
+        if(i.second->children.size() != 0)
+            this->gateNum++;
+        else
+            this->basicNum++;
     }
 }
