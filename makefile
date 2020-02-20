@@ -17,6 +17,4 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
  
 clean:
 	@rm -rf $(BUILD_DIR)
-
-f:
 	@rm -rf $(OUTPUT_DIR)
