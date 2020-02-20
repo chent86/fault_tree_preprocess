@@ -1,3 +1,8 @@
+/*
+ *Author: Tao Chen
+ *Organization: SYSU
+ */
+
 #include "simplify.hpp"
 
 simplify::~simplify() {}

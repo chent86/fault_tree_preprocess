@@ -1,3 +1,8 @@
+/*
+ *Author: Tao Chen
+ *Organization: SYSU
+ */
+
 #include "find_modules.hpp"
 
 findModules::findModules(tree* t, string outputDir, string fileName, int originBasicEventNum, int originGateEventNum,

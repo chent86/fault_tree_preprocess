@@ -4,7 +4,7 @@ INC_DIR := include
 SRC_DIR := src
 BUILD_DIR := build
 BIN_DIR := .
-OUTPUT_DIR := data/output/*
+OUTPUT_DIR := example/output/*
 INCLUDE := -I./$(INC_DIR)
  
 $(BIN_DIR)/main: $(BUILD_DIR)/main.o $(BUILD_DIR)/find_modules.o $(BUILD_DIR)/simplify.o $(BUILD_DIR)/tools.o
@@ -16,7 +16,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@$(CC) $(FLAGS) $(INCLUDE) -c -o $@ $<
  
 clean:
-	@rm -rf $(OUTPUT_DIR)
+	@rm -rf $(BUILD_DIR)
 
 f:
 	@rm -rf $(OUTPUT_DIR)
