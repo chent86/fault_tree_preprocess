@@ -172,7 +172,7 @@ void findModules::LCC_check(node* cur, set<string>& basicOrTop) {
                 connectionFirst.insert(k.first);
             for(auto &k: this->connection_list[obtainedList[j][0]])
                 connectionSecond.insert(k.first);
-            if(connectionFirst.size() > 1 && connectionFirst.size() == connectionSecond.size()) { // 判断集合相等
+            if(connectionFirst.size() == connectionSecond.size()) { // 判断集合相等
                 vector<node*> v;
                 set_intersection(connectionFirst.begin(), connectionFirst.end(), connectionSecond.begin(),
                                  connectionSecond.end(), back_inserter(v));

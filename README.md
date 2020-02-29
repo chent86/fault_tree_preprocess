@@ -7,7 +7,7 @@
 ## Quick start
 ```
 make
-./main
+./main -INPUT_DIR=example/input -OUTPUT_DIR=example/output
 ```
 ## Config
 
