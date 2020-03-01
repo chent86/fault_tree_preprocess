@@ -24,6 +24,7 @@ path: include/config.hpp
 |NORMAL_PROCESS|Get models of the tree if set true, else return original tree.|true|
 |LCC_PROCESS|Run Local Combination Check when finding models if set true.|true|
 |SIMPLE_OUTPUT|Return simple version output if set true.|false|
+|FILE_NAME|Handle only one file of INPUT_DIR, e.g. chinese.dag|null|
 
 ## Procedure of preprocessing
 

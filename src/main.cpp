@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
             if(string(argv[i]) == "-h") {
                 cout << "For example: \n./main -INPUT_DIR=example/input -OUTPUT_DIR=example/output "
                 << "-SAME_GATE=true -ONE_CHILD=true -SAME_TREE=true -NORMAL_PROCESS=true "
-                << "-LCC_PROCESS=true -SIMPLE_OUTPUT=false" << endl;
+                << "-LCC_PROCESS=true -SIMPLE_OUTPUT=false -FILE_NAME=chinese.dag" << endl;
                 return 0;
             }
             string param = argv[i];
@@ -79,6 +79,8 @@ int main(int argc, char* argv[]) {
     dirent* entry;
     while((entry=readdir(d)) != NULL) {
         string name = entry->d_name;
+        if(config.count("FILE_NAME"))
+            name = config["FILE_NAME"]; // 处理单个例子
         if(name == "." || name == "..")
             continue;
         tree* t = new tree();
@@ -106,6 +108,8 @@ int main(int argc, char* argv[]) {
         delete t;
         cout << name << " " << "【simplify time】" << simTime-curTime << "【module time】" << moTime-simTime << 
         "【module】" << p.modulesNum << endl;
+        if(config.count("FILE_NAME"))
+            break;
     }
     closedir(d);
 }
