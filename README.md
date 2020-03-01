@@ -6,6 +6,7 @@
 - gcc 7.3.0
 ## Quick start
 ```
+unzip include/json.zip -d include
 make
 ./main -INPUT_DIR=example/input -OUTPUT_DIR=example/output
 ```

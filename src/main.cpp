@@ -5,6 +5,8 @@
 
 #include "simplify.hpp"
 #include "find_modules.hpp"
+#include "json.hpp"
+using json = nlohmann::json;
 
 map<string, string> config = {
     {"INPUT_DIR", "example/input"},
@@ -16,6 +18,46 @@ map<string, string> config = {
     {"LCC_PROCESS", "true"},
     {"SIMPLE_OUTPUT", "false"}
 };
+
+void structToJson(package& p, string name) {
+    json j;
+    j["origin_basic_event_num"] = p.originBasicEventNum;
+    j["origin_gate_evnet_num"] = p.originGateEvnetNum;
+    j["basic_event_num"] = p.basicEventNum;
+    j["gate_event_num"] = p.gateEventNum;
+    j["modules_num"] = p.modulesNum;
+    j["modularized"] = p.modularized;
+    j["simplify_time"] = p.simplifyTime;
+    j["module_time"] = p.moduleTime;
+
+    j["coherent_map"] = {};
+    for(auto &i: p.coherentMap)
+        j["coherent_map"][i.first] = i.second;
+
+    j["root_map"] = {};
+    for(auto &i: p.rootMap)
+        j["root_map"][i.first] = i.second;
+
+    j["module_var_index_map"] = {};
+    for(auto &i: p.moduleVarIndexMap) {
+        j["module_var_index_map"][i.first] = {};
+        for(auto &k: i.second) {
+            j["module_var_index_map"][i.first][k.first] = k.second;
+        }
+    }
+
+    j["module_index_var_map"] = {};
+    for(auto &i: p.moduleIndexVarMap) {
+        j["module_index_var_map"][i.first] = {};
+        for(auto &k: i.second) {
+            j["module_index_var_map"][i.first][to_string(k.first)] = k.second;
+        }
+    }
+
+    std::ofstream package_file(config["OUTPUT_DIR"] + "/" + name.substr(0, name.length()-4) + "/package");
+    package_file << j.dump();
+    package_file.close();
+}
 
 int main(int argc, char* argv[]) {
     if(argc > 1) {
@@ -58,9 +100,7 @@ int main(int argc, char* argv[]) {
         package p = f->getData();
         p.simplifyTime = simTime - curTime;
         p.moduleTime = moTime - simTime;
-        std::ofstream package_file(config["OUTPUT_DIR"] + "/" + name.substr(0, name.length()-4) + "/package", ofstream::binary);
-        package_file.write((char*)&p, sizeof(package));
-        package_file.close();
+        structToJson(p, name);
         delete s;
         delete f;
         delete t;
