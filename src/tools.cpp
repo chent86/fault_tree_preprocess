@@ -37,6 +37,10 @@ void tree::parse(string fileName) {
         if(line.length() == 0) {
             continue;
         }
+        // 处理windows \r
+        if(line[line.length()-1] == '\r') {
+            line = line.substr(0, line.length()-1);
+        }
 
         // 处理注释
         if(line[0] == '/') {
